@@ -50,7 +50,7 @@ toumasulo::toumasulo() {
         stations[count++] = new nand;
     }
 
-    nd = stations[count];
+    mul = stations[count];
     for (int i = 0; i < mults; i++) {
         stations[count++] = new mult;
     }
