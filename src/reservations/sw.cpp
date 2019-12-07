@@ -13,12 +13,12 @@ sw::~sw() {
 
 }
 
-bool sw::add_inst(short rs1, short rs2, short imm) {
+bool sw::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    src1 = rs1;
-    src2 = rs2;
-    address = src2 + imm;
+    src1 = in_inst.rs1;
+    src2 = in_inst.rs2;
+    address = src2 + in_inst.imm;
     return false;
 }
 

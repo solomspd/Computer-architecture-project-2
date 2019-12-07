@@ -35,6 +35,6 @@ int station::set_rob(short in) {
     return rob;
 }
 
-bool station::get_result() {
-    return false;
+short station::get_result() {
+    return 0;
 }

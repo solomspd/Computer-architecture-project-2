@@ -53,7 +53,7 @@ toumasulo::~toumasulo() {
 }
 
 
-bool toumasulo::queue_inst(instrucuton in_inst) {
+bool toumasulo::queue_inst(instruction in_inst) {
     bool queued = true;
 //    if (!rob.is_available()) {  // TODO add ROB checking implementation
 //        return queued;

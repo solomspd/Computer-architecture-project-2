@@ -16,7 +16,7 @@ private:
 public:
     jump();
     ~jump();
-    bool add_inst(short pc_in, short imm);
+    bool add_inst(short pc, instruction in_inst) override;
     short get_result() override;
 };
 

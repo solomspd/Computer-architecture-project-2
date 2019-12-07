@@ -12,12 +12,12 @@ branch::~branch() {
 
 }
 
-bool branch::add_inst(short pc, short rs1, short rs2, short imm) {
+bool branch::add_inst(short pc, instruction in_inst) {
     if (busy) return false;
     busy = true;
-    address = pc + 1 + imm;
-    src1 = rs1;
-    src2 = rs2;
+    address = pc + 1 + in_inst.imm;
+    src1 = in_inst.rs1;
+    src2 = in_inst.rs2;
 
     return true;
 }

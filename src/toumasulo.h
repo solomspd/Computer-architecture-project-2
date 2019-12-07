@@ -42,7 +42,7 @@ public:
 
     ~toumasulo();
 
-    bool queue_inst(instrucuton in_inst);
+    bool queue_inst(instruction in_inst);
 
     void adv_c();
 };

@@ -13,7 +13,7 @@ enum inst_type {
     l, s, j, b, a, n, m
 };
 
-struct instrucuton {
+struct instruction {
     short rs1, rs2, rd, imm;
     inst_type inst_t;
     short sub_type;
@@ -36,8 +36,8 @@ public:
     bool is_busy();
     int set_rob(short in);
     virtual short get_result();
-    virtual bool add_inst(instrucuton in_inst);
-    virtual bool add_inst(short pc, instrucuton in_inst);
+    virtual bool add_inst(instruction in_inst);
+    virtual bool add_inst(short pc, instruction in_inst);
 };
 
 

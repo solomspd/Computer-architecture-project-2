@@ -12,11 +12,11 @@ lw::~lw() {
 
 }
 
-bool lw::add_inst(short rs1, short rd, short imm) {
+bool lw::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    dest = rd;
-    address = rs1 + imm;
+    dest = in_inst.rd;
+    address = in_inst.rs1 + in_inst.imm;
     return true;
 }
 

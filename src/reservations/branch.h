@@ -14,7 +14,7 @@ private:
 public:
     branch();
     ~branch();
-    bool add_inst(short pc, short rs1, short rs2, short imm);
+    bool add_inst(short pc, instruction in_inst) override;
     short get_result() override;
 };
 

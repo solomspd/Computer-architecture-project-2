@@ -12,12 +12,12 @@ nand::~nand() {
 
 }
 
-bool nand::add_inst(short rs1, short rs2, short rd) {
+bool nand::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    src1 = rs1;
-    src2 = rs2;
-    dest = rd;
+    src1 = in_inst.rs1;
+    src2 = in_inst.rs2;
+    dest = in_inst.rd;
 
     return true;
 }

@@ -14,7 +14,7 @@ private:
 public:
     sw();
     ~sw();
-    bool add_inst(short rs1, short rs2, short imm);
+    bool add_inst(instruction in_inst) override;
     short get_result() override;
 };
 

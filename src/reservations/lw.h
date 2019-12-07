@@ -13,7 +13,7 @@ private:
 public:
     lw();
     ~lw();
-    bool add_inst(short rs1, short rd, short imm);
+    bool add_inst(instruction in_inst) override;
     short get_result() override;
 };
 

@@ -15,7 +15,7 @@ private:
 public:
     arith();
     ~arith();
-    bool add_inst(short rs1, short rs2, short rd);
+    bool add_inst(instruction in_inst) override;
     short get_result() override;
 };
 

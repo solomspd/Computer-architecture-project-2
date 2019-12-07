@@ -12,15 +12,15 @@ jump::~jump() {
 
 }
 
-bool jump::add_inst(short pc_in, short imm) {
+bool jump::add_inst(short pc_in, instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    address = pc_in + 1 + imm;
+    address = pc_in + 1 + in_inst.imm;
 
     return true;
 }
 
 short jump::get_result() {
-    res =
+    // TODO figure out setting PC
     return address;
 }
