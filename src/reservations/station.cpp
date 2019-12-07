@@ -21,8 +21,14 @@ bool station::adv_c() {
                 cur_state = execute;
             }
             break;
-        case execute: cur_c--;
+        case execute:
+            if (!cur_c--){
+                cur_state = write;
+            }
+            break;
         case write: res = get_result();
+            busy = false;
+            break;
     }
     return cur_state == write;
 }
@@ -37,4 +43,9 @@ int station::set_rob(short in) {
 
 short station::get_result() {
     return 0;
+}
+
+void station::set_dep(short in_dep1, short in_dep2) {
+    dep1 = in_dep1;
+    dep2 = in_dep2;
 }

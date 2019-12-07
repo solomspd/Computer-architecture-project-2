@@ -4,6 +4,12 @@
 
 #include "toumasulo.h"
 
+/*
+TODO THINGS WE NEED TO CONSIDER:
+ * How to handle multiple stations trying to write in the same cycle. Convention is writing the oldest first.
+ * How should we write to the rob? should we give the reservation station a pointer to the int variable it will eventually change? will we update it with a method from the station?
+ * How will we update from the rob the dependent stations?
+*/
 toumasulo::toumasulo() {
     cycle_n = 0;
     pc = 0;
@@ -58,13 +64,15 @@ bool toumasulo::queue_inst(instruction in_inst) {
 //    if (!rob.is_available()) {  // TODO add ROB checking implementation
 //        return queued;
 //    }
+    station *reserved;
     switch (in_inst.inst_t) {
         case l:
             for (int i = 0; i < lws; i++) {
-                if (load->add_inst(in_inst)) {
+                if (load[i].add_inst(in_inst)) {
 //                i.set_dep(reg_dep[in_inst.rs1]);// TODO iron out dependency checking and assign it to station
 //                i.set_rob(rob.reserve(i)) // TODO rob function that reserves rob for new instruction
                     queued = false;
+                    reserved = load + i;
                     break;
                 }
             }
@@ -75,6 +83,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
                 if (store[i].add_inst(in_inst)) {
 //                i.set_dep(reg_dep[in_inst.rs1], reg_dep[in_inst.rs2]);
 //                i.set_rob(rob.reserve(i));
+                    reserved = store + i;
                     queued = false;
                     break;
                 }
@@ -85,6 +94,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
             for (int i = 0; i < js; i++) {
                 if (jmp[i].add_inst(pc, in_inst)) {
 //                i.set_rob(rob.reserve(i));
+                    reserved = jmp + i;
                     queued = false;
                     break;
                 }
@@ -96,6 +106,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
                 if (beq[i].add_inst(pc, in_inst)) {
 //                i.set_rob(rob.reserve(i));
                     queued = false;
+                    reserved = beq + i;
                     break;
                 }
             }
@@ -106,6 +117,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
                 if (ari[i].add_inst(in_inst)) {
 //                i.set_rob(rob.reserve(i));
                     queued = false;
+                    reserved = ari + i;
                     break;
                 }
             }
@@ -114,8 +126,9 @@ bool toumasulo::queue_inst(instruction in_inst) {
         case n:
             for (int i = 0; i < ns; i++) {
                 if (nd[i].add_inst(in_inst)) {
-//                i.set_rob(rob.reserve(i));
+//                i.set_rob(reg_dep[rob.reserve(i));
                     queued = false;
+                    reserved = nd + i;
                     break;
                 }
             }
@@ -126,17 +139,26 @@ bool toumasulo::queue_inst(instruction in_inst) {
                 if (mul[i].add_inst(in_inst)) {
 //                i.set_rob(rob.reserve(i));
                     queued = false;
+                    reserved = mul + i;
                     break;
                 }
             }
             break;
     }
+
+    if (reserved != nullptr) { // UNUSED ELEMENTS OF INSTRUCTIONS ARE TO BE SET TO -1
+        reserved->set_dep(in_inst.rs1 != -1? reg_dep[in_inst.rs1] : -1, in_inst.rs2 != -1 ? reg_dep[in_inst.rs2] : -1); // checks for dependencies through register/ROB table and assigns the according dependency. If instruction does not use rs1 or rs2 then it writes -1, meaning there is no dependency
+    }
+
     return queued;
 }
 
 void toumasulo::adv_c() {
     cycle_n++;
+    pc += 4;
     for (int i = 0; i < tot; i++) {
-        stations[i]->adv_c();
+        if (stations[i]->adv_c()) {
+//            rob.update_reservation(station[i].get_result());        //TODO elaborate implementation. Update rob with resulting value from station
+        }
     }
 }

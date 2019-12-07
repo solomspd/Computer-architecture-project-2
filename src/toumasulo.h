@@ -33,7 +33,7 @@ private:
     station *nd;
     station *mul;
     short reg[reg_count];
-    short reg_dep[reg_count];
+    short reg_dep[reg_count]; // empty value is -1
     int cycle_n;
     short pc;
     std::queue<short> write_queue;
