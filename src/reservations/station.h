@@ -26,7 +26,7 @@ protected:
     short dest; //destination register
     short rob;
     short res; //result
-    short dep1, dep2; //dependencies
+    short *dep1, *dep2; //dependencies
     bool busy;
     status cur_state;
 public:
@@ -35,7 +35,7 @@ public:
     bool adv_c();
     bool is_busy();
     int set_rob(short in);
-    void set_dep(short in_dep1, short in_dep2);
+    void set_dep(short *in_dep1, short *in_dep2);
     virtual short get_result();
     virtual bool add_inst(instruction in_inst);
     virtual bool add_inst(short pc, instruction in_inst);

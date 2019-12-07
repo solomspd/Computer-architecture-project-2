@@ -13,6 +13,8 @@ TODO THINGS WE NEED TO CONSIDER:
 toumasulo::toumasulo() {
     cycle_n = 0;
     pc = 0;
+    std::fill(std::begin(reg_dep), std::end(reg_dep), new short {0});
+
     std::accumulate(unit_counts, unit_counts + 7, tot);
     stations = new station*[tot];
     int count  = 0;
@@ -147,7 +149,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
     }
 
     if (reserved != nullptr) { // UNUSED ELEMENTS OF INSTRUCTIONS ARE TO BE SET TO -1
-        reserved->set_dep(in_inst.rs1 != -1? reg_dep[in_inst.rs1] : -1, in_inst.rs2 != -1 ? reg_dep[in_inst.rs2] : -1); // checks for dependencies through register/ROB table and assigns the according dependency. If instruction does not use rs1 or rs2 then it writes -1, meaning there is no dependency
+        reserved->set_dep(in_inst.rs1 != -1 ? reg_dep[in_inst.rs1] : nullptr, in_inst.rs2 != -1 ? reg_dep[in_inst.rs2] : nullptr); // checks for dependencies through register/ROB table and assigns the according dependency. If instruction does not use rs1 or rs2 then it writes null, meaning there is no dependency
     }
 
     return queued;

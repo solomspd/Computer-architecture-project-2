@@ -17,7 +17,7 @@ station::~station() {
 bool station::adv_c() {
     switch (cur_state) {
         case issue :
-            if (dep1 == -1 && dep2 == -1) {
+            if (dep1 == nullptr && dep2 == nullptr) {
                 cur_state = execute;
             }
             break;
@@ -45,7 +45,7 @@ short station::get_result() {
     return 0;
 }
 
-void station::set_dep(short in_dep1, short in_dep2) {
+void station::set_dep(short *in_dep1, short *in_dep2) {
     dep1 = in_dep1;
     dep2 = in_dep2;
 }
