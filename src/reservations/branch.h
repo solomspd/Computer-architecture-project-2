@@ -8,13 +8,14 @@
 
 #include "station.h"
 
-class branch : private station {
+class branch : public station {
 private:
     short address;
 public:
     branch();
     ~branch();
     bool add_inst(short pc, short rs1, short rs2, short imm);
+    short get_result() override;
 };
 
 

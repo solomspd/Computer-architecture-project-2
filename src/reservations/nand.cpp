@@ -5,7 +5,7 @@
 #include "nand.h"
 
 nand::nand() {
-
+    t_c = nc;
 }
 
 nand::~nand() {
@@ -20,4 +20,8 @@ bool nand::add_inst(short rs1, short rs2, short rd) {
     dest = rd;
 
     return true;
+}
+
+short nand::get_result() {
+    return ~(src1 & src2);
 }

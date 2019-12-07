@@ -8,13 +8,16 @@
 
 #include "station.h"
 
-class jump : private station {
+enum type {jmp, jalr, ret};
+
+class jump : public station {
 private:
     short address;
 public:
     jump();
     ~jump();
     bool add_inst(short pc_in, short imm);
+    short get_result() override;
 };
 
 

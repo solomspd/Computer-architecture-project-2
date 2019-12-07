@@ -5,7 +5,8 @@
 #include "sw.h"
 
 sw::sw() {
-
+    dest = 0;
+    t_c = swc;
 }
 
 sw::~sw() {
@@ -19,4 +20,9 @@ bool sw::add_inst(short rs1, short rs2, short imm) {
     src2 = rs2;
     address = src2 + imm;
     return false;
+}
+
+short sw::get_result() {
+    // mem[address] = src1;
+    return
 }

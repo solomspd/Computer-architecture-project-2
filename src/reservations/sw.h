@@ -8,13 +8,14 @@
 
 #include "station.h"
 
-class sw : private station {
+class sw : public station {
 private:
     short address;
 public:
     sw();
     ~sw();
     bool add_inst(short rs1, short rs2, short imm);
+    short get_result() override;
 };
 
 

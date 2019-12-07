@@ -7,13 +7,14 @@
 
 #include "station.h"
 
-class lw : private station{
+class lw : public station{
 private:
     short address;
 public:
     lw();
     ~lw();
-    bool add_inst(short rs1, short rd, short imm)
+    bool add_inst(short rs1, short rd, short imm);
+    short get_result() override;
 };
 
 

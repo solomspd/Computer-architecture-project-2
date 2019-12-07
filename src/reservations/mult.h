@@ -8,14 +8,14 @@
 
 #include "station.h"
 
-class mult : private station {
+class mult : public station {
 private:
 
 public:
     mult();
     ~mult();
     bool add_inst(short rs1, short rs2, short rd);
-
+    short get_result() override;
 };
 
 

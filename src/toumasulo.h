@@ -5,6 +5,9 @@
 #ifndef COMPUTER_ARCHITECTURE_PROJECT_2_TOUMASULO_H
 #define COMPUTER_ARCHITECTURE_PROJECT_2_TOUMASULO_H
 
+#include <numeric>
+#include <queue>
+
 #include "reservations/station.h"
 #include "reservations/lw.h"
 #include "reservations/sw.h"
@@ -14,32 +17,34 @@
 #include "reservations/nand.h"
 #include "reservations/mult.h"
 
-const short lws = 2, sws = 2, js = 2, bs = 2, as = 3, ns=2, mults = 2;
+const short unit_counts[7] = {2, 2, 2, 2, 3, 2, 2};
+const short lws = 2, sws = 2, js = 2, bs = 2, as = 3, ns = 2, mults = 2;
 const short reg_count = 8;
-enum inst_type{l, s, j, b, a, n, m};
-
-struct instrucuton {
-    short rs1, rs2, rd, imm;
-    inst_type inst_t;
-    short sub_type;
-};
 
 class toumasulo {
 private:
-    lw load[lws];
-    sw store[sws];
-    jump jmp[js];
-    branch beq[bs];
-    arith ari[as];
-    nand nd[ns];
-    mult mul[mults];
+    int tot;
+    station **stations;
+    station *load;
+    station *store;
+    station *jmp;
+    station *beq;
+    station *ari;
+    station *nd;
+    station *mul;
     short reg[reg_count];
+    short reg_dep[reg_count];
     int cycle_n;
     short pc;
+    std::queue<short> write_queue;
 public:
     toumasulo();
+
     ~toumasulo();
-    bool queue_inst(instrucuton in_inst)
+
+    bool queue_inst(instrucuton in_inst);
+
+    void adv_c();
 };
 
 

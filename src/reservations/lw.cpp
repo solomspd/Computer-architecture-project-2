@@ -5,7 +5,7 @@
 #include "lw.h"
 
 lw::lw() {
-
+    t_c = lwc;
 }
 
 lw::~lw() {
@@ -18,4 +18,8 @@ bool lw::add_inst(short rs1, short rd, short imm) {
     dest = rd;
     address = rs1 + imm;
     return true;
+}
+
+short lw::get_result() {
+//    return access_memory(address);
 }

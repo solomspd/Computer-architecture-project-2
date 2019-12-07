@@ -5,7 +5,7 @@
 #include "branch.h"
 
 branch::branch() {
-
+    t_c = bc;
 }
 
 branch::~branch() {
@@ -20,4 +20,8 @@ bool branch::add_inst(short pc, short rs1, short rs2, short imm) {
     src2 = rs2;
 
     return true;
+}
+
+short branch::get_result() {
+    return address;
 }

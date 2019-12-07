@@ -5,7 +5,7 @@
 #include "mult.h"
 
 mult::mult() {
-
+    t_c = mc;
 }
 
 mult::~mult() {
@@ -20,4 +20,8 @@ bool mult::add_inst(short rs1, short rs2, short rd) {
     dest = rd;
 
     return true;
+}
+
+short mult::get_result() {
+    return src1 * src2;
 }
