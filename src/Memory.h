@@ -1,4 +1,6 @@
 #pragma once
+#include "Registers.h"
+#include "Registers.cpp"
 class Memory
 {
 public:
@@ -13,5 +15,6 @@ private:
 	char check;
 	int location;
 	float data;
+	Registers reg;
 };
 
