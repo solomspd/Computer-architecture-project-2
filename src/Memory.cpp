@@ -1,7 +1,5 @@
 #include "Memory.h"
-#include <iostream>
-#include <string>
-using namespace std;
+
 
 Memory::Memory()
 {
@@ -9,6 +7,7 @@ Memory::Memory()
 	for(int i = 0; i < size; i++)
 	mem[i] = 0;
 	check = '\0';
+	count = 0;
 }
 
 
@@ -18,13 +17,13 @@ Memory::~Memory()
 
 float Memory::getdata(int imm)
 {
-	reg.getReg(imm);
+	return mem[imm];
 
 }
 
 void Memory::MemWrite(int imm, int data)
 {
-	reg.RegWrite(imm, data);
+	mem[imm] = data;
 }
 
 void Memory::initMem(int location, float data)
@@ -39,4 +38,14 @@ void Memory::initMem(int location, float data)
 		cin >> location >> data;
 		initMem(location, data);
 	}
+}
+
+void Memory::getfromfile(string s)
+{
+	infile.open(s);
+	while (!infile.eof())
+	{
+		infile >> hex >> mem[count++];
+	}
+	infile.close();
 }
