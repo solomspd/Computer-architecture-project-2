@@ -1,6 +1,4 @@
 #include "Memory.h"
-#include "Registers.h"
-#include "Registers.cpp"
 #include <iostream>
 #include <string>
 using namespace std;
@@ -20,12 +18,13 @@ Memory::~Memory()
 
 float Memory::getdata(int imm)
 {
-	return mem[imm];
+	reg.getReg(imm);
+
 }
 
 void Memory::MemWrite(int imm, int data)
 {
-	mem[imm] = data;
+	reg.RegWrite(imm, data);
 }
 
 void Memory::initMem(int location, float data)
