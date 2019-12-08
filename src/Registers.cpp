@@ -22,7 +22,3 @@ float Registers::getReg(int imm)
 	return reg[imm];
 }
 
-void Registers::initReg(int, float)
-{
-
-}
