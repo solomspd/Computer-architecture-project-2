@@ -15,13 +15,21 @@ nand::~nand() {
 bool nand::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    src1 = in_inst.rs1;
-    src2 = in_inst.rs2;
+    if (dep1) {
+        temp1 = in_inst.rs1;
+    } else {
+        src1 = *in_inst.rs1;
+    }
+    if (dep2) {
+        temp2 = in_inst.rs2;
+    } else {
+        src2 = *in_inst.rs2;
+    }
     dest = in_inst.rd;
 
     return true;
 }
 
 short nand::get_result() {
-    return ~(src1 & src2);
+    return *res = ~(src1 & src2);
 }

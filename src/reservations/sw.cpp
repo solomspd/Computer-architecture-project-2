@@ -16,13 +16,22 @@ sw::~sw() {
 bool sw::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    src1 = in_inst.rs1;
-    src2 = in_inst.rs2;
+    if (dep1) {
+        temp1 = in_inst.rs1;
+    } else {
+        src1 = *in_inst.rs1;
+    }
+    if (dep2) {
+        temp2 = in_inst.rs1;
+    } else {
+        src2 = *in_inst.rs2;
+    }
     address = src2 + in_inst.imm;
+
     return false;
 }
 
 short sw::get_result() {
     // mem[address] = src1;
-    return
+    return;
 }

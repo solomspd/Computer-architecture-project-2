@@ -14,6 +14,7 @@ toumasulo::toumasulo() {
     cycle_n = 0;
     pc = 0;
     std::fill(std::begin(reg_dep), std::end(reg_dep), new short {0});
+    std::fill(std::begin(reg), std::end(reg), new short {0});
 
     std::accumulate(unit_counts, unit_counts + 7, tot);
     stations = new station*[tot];
@@ -32,12 +33,12 @@ toumasulo::toumasulo() {
 
     jmp = stations[count];
     for (int i = 0; i < js; i++) {
-        stations[count++] = new jump;
+        stations[count++] = new jump(pc);
     }
 
     beq = stations[count];
     for (int i = 0; i < bs; i++) {
-        stations[count++] = new branch;
+        stations[count++] = new branch(pc);
     }
 
     ari = stations[count];
@@ -62,19 +63,33 @@ toumasulo::~toumasulo() {
 
 
 bool toumasulo::queue_inst(instruction in_inst) {
-    bool queued = true;
 //    if (!rob.is_available()) {  // TODO add ROB checking implementation
-//        return queued;
+//        return true;
 //    }
-    station *reserved;
+    short rs1 = *in_inst.rs1;
+    short rs2 = *in_inst.rs2;
+
+    bool dep1 = reg_dep[rs1].first;
+    bool dep2 = reg_dep[rs2].first;
+
+    if (!reg_dep[rs1].first) {
+        in_inst.rs1 = reg[rs1];
+    } else {
+        in_inst.rs1 = reg_dep[rs1].second;
+    }
+    if (!reg_dep[rs2].first) {
+        in_inst.rs2 = reg[rs2];
+    } else {
+        in_inst.rs2 = reg_dep[rs2].second;
+    }
+
+    station *reserved = nullptr;
     switch (in_inst.inst_t) {
         case l:
             for (int i = 0; i < lws; i++) {
                 if (load[i].add_inst(in_inst)) {
-//                i.set_dep(reg_dep[in_inst.rs1]);// TODO iron out dependency checking and assign it to station
-//                i.set_rob(rob.reserve(i)) // TODO rob function that reserves rob for new instruction
-                    queued = false;
                     reserved = load + i;
+                    dep1 = false;
                     break;
                 }
             }
@@ -83,10 +98,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
         case s:
             for (int i = 0; i < sws; i++) {
                 if (store[i].add_inst(in_inst)) {
-//                i.set_dep(reg_dep[in_inst.rs1], reg_dep[in_inst.rs2]);
-//                i.set_rob(rob.reserve(i));
                     reserved = store + i;
-                    queued = false;
                     break;
                 }
             }
@@ -94,10 +106,10 @@ bool toumasulo::queue_inst(instruction in_inst) {
 
         case j:
             for (int i = 0; i < js; i++) {
-                if (jmp[i].add_inst(pc, in_inst)) {
-//                i.set_rob(rob.reserve(i));
+                if (jmp[i].add_inst(in_inst)) {
                     reserved = jmp + i;
-                    queued = false;
+                    dep1 = false;
+                    dep2 = false;
                     break;
                 }
             }
@@ -105,9 +117,7 @@ bool toumasulo::queue_inst(instruction in_inst) {
 
         case b:
             for (int i = 0; i < bs; i++) {
-                if (beq[i].add_inst(pc, in_inst)) {
-//                i.set_rob(rob.reserve(i));
-                    queued = false;
+                if (beq[i].add_inst(in_inst)) {
                     reserved = beq + i;
                     break;
                 }
@@ -117,9 +127,10 @@ bool toumasulo::queue_inst(instruction in_inst) {
         case a:
             for (int i = 0; i < as; i++) {
                 if (ari[i].add_inst(in_inst)) {
-//                i.set_rob(rob.reserve(i));
-                    queued = false;
                     reserved = ari + i;
+                    if (in_inst.sub_type /*== ADDI*/) {
+                        dep2 = false;
+                    }
                     break;
                 }
             }
@@ -128,8 +139,6 @@ bool toumasulo::queue_inst(instruction in_inst) {
         case n:
             for (int i = 0; i < ns; i++) {
                 if (nd[i].add_inst(in_inst)) {
-//                i.set_rob(reg_dep[rob.reserve(i));
-                    queued = false;
                     reserved = nd + i;
                     break;
                 }
@@ -139,8 +148,6 @@ bool toumasulo::queue_inst(instruction in_inst) {
         case m:
             for (int i = 0; i < mults; i++) {
                 if (mul[i].add_inst(in_inst)) {
-//                i.set_rob(rob.reserve(i));
-                    queued = false;
                     reserved = mul + i;
                     break;
                 }
@@ -148,19 +155,21 @@ bool toumasulo::queue_inst(instruction in_inst) {
             break;
     }
 
-    if (reserved != nullptr) { // UNUSED ELEMENTS OF INSTRUCTIONS ARE TO BE SET TO -1
-        reserved->set_dep(in_inst.rs1 != -1 ? reg_dep[in_inst.rs1] : nullptr, in_inst.rs2 != -1 ? reg_dep[in_inst.rs2] : nullptr); // checks for dependencies through register/ROB table and assigns the according dependency. If instruction does not use rs1 or rs2 then it writes null, meaning there is no dependency
+    
+
+    // ROB.reserve(reserved);
+    if (reserved != nullptr) {
+        reserved->set_dep(dep1, dep2);
     }
 
-    return queued;
+    return reserved == nullptr;
 }
 
 void toumasulo::adv_c() {
     cycle_n++;
-    pc += 4;
+    pc++;
+
     for (int i = 0; i < tot; i++) {
-        if (stations[i]->adv_c()) {
-//            rob.update_reservation(station[i].get_result());        //TODO elaborate implementation. Update rob with resulting value from station
-        }
+        stations[i]->adv_c();
     }
 }

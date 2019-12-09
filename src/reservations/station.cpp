@@ -8,6 +8,7 @@ station::station() {
     cur_c = 0;
     busy = false;
     cur_state = issue;
+    res = new short;
 }
 
 station::~station() {
@@ -16,8 +17,20 @@ station::~station() {
 
 bool station::adv_c() {
     switch (cur_state) {
-        case issue :
-            if (dep1 == nullptr && dep2 == nullptr) {
+        case issue :     
+            if (dep1) {
+                if (temp1 != nullptr) {
+                    dep1 = false;
+                    src1 = *temp1;
+                }
+            }
+            if (dep2) {
+                if (temp1 != nullptr) {
+                    dep2 = false;
+                    src2 = *temp2;
+                }
+            }
+            if (!dep1 && !dep2) {
                 cur_state = execute;
             }
             break;
@@ -26,7 +39,7 @@ bool station::adv_c() {
                 cur_state = write;
             }
             break;
-        case write: res = get_result();
+        case write: res = new short {get_result()};
             busy = false;
             break;
     }
@@ -45,7 +58,11 @@ short station::get_result() {
     return 0;
 }
 
-void station::set_dep(short *in_dep1, short *in_dep2) {
+void station::set_dep(bool in_dep1, bool in_dep2) {
     dep1 = in_dep1;
     dep2 = in_dep2;
+}
+
+short *station::res_ptr() {
+    return res;
 }

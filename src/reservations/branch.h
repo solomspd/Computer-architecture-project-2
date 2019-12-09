@@ -11,10 +11,13 @@
 class branch : public station {
 private:
     short address;
+    short *pc;
+    bool predict_taken, taken;
 public:
     branch();
+    branch(short *pc);
     ~branch();
-    bool add_inst(short pc, instruction in_inst) override;
+    bool add_inst(instruction in_inst) override;
     short get_result() override;
 };
 

@@ -16,7 +16,7 @@ bool lw::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
     dest = in_inst.rd;
-    address = in_inst.rs1 + in_inst.imm;
+    address = *in_inst.rs1 + in_inst.imm;
     return true;
 }
 

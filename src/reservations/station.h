@@ -14,7 +14,7 @@ enum inst_type {
 };
 
 struct instruction {
-    short rs1, rs2, rd, imm;
+    short *rs1, *rs2, rd, imm;
     inst_type inst_t;
     short sub_type;
 };
@@ -23,10 +23,11 @@ class station {
 protected:
     short t_c, cur_c; //target and current cycles
     short src1, src2; //sources
+    short *temp1, *temp2;
     short dest; //destination register
     short rob;
-    short res; //result
-    short *dep1, *dep2; //dependencies
+    short *res; //result
+    bool dep1, dep2; //dependencies
     bool busy;
     status cur_state;
 public:
@@ -35,10 +36,11 @@ public:
     bool adv_c();
     bool is_busy();
     int set_rob(short in);
-    void set_dep(short *in_dep1, short *in_dep2);
+    void set_dep(bool in_dep1, bool in_dep2);
     virtual short get_result();
     virtual bool add_inst(instruction in_inst);
     virtual bool add_inst(short pc, instruction in_inst);
+    short *res_ptr();
 };
 
 

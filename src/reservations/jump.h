@@ -13,10 +13,12 @@ enum type {jmp, jalr, ret};
 class jump : public station {
 private:
     short address;
+    short *pc;
 public:
     jump();
+    jump(short *pc);
     ~jump();
-    bool add_inst(short pc, instruction in_inst) override;
+    bool add_inst(instruction in_inst) override;
     short get_result() override;
 };
 

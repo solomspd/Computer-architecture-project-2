@@ -8,19 +8,23 @@ jump::jump() {
     t_c = jc;
 }
 
+jump::jump(short *in_pc) {
+    jump();
+    pc = in_pc;
+}
+
 jump::~jump() {
 
 }
 
-bool jump::add_inst(short pc_in, instruction in_inst) {
+bool jump::add_inst(instruction in_inst) {
     if (busy) {return false;}
     busy = true;
-    address = pc_in + 1 + in_inst.imm;
+    address = *pc + 1 + in_inst.imm;
 
     return true;
 }
 
 short jump::get_result() {
-    // TODO figure out setting PC
-    return address;
+    return *pc = address;
 }
