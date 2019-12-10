@@ -25,12 +25,12 @@ bool station::adv_c() {
                 }
             }
             if (dep2) {
-                if (temp1 != nullptr) {
+                if (temp2 != nullptr) {
                     dep2 = false;
                     src2 = *temp2;
                 }
             }
-            if (!dep1 && !dep2) {
+            if (!dep1 && !dep2 && sw_dep()) {
                 cur_state = execute;
             }
             break;

@@ -12,6 +12,7 @@ private:
 	int value;
 	bool ready;
 	std::vector<std::pair<short*, int>>tracking;
+//	int counter;
 	//	std::deque<ROB> rob;
 public:
 	ROB();
@@ -27,6 +28,7 @@ public:
 	void setReadinessStatus(std::vector<ROB>, int, int);
 	// takes the instruction tag in the queue of the ROB
 	bool getReadinessState();
+	void advance_cycle(short*, int, std:: vector<ROB>);
 	// takes the instruction tag in the queue of the ROB and returns the destination to be used in the registers table
 
 };

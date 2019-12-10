@@ -17,6 +17,8 @@
 #include "reservations/nand.h"
 #include "reservations/mult.h"
 
+#include "ROB.h"
+
 const short unit_counts[7] = {2, 2, 2, 2, 3, 2, 2};
 const short lws = 2, sws = 2, js = 2, bs = 2, as = 3, ns = 2, mults = 2;
 const short reg_count = 8;
@@ -37,14 +39,16 @@ private:
     std::pair<bool, short*> reg_dep[reg_count];
     int cycle_n;
     short *pc;
-    std::queue<short> write_queue;
+    ROB instance;
+    std:: vector<ROB> rob;  
+    
 public:
     toumasulo();
 
     ~toumasulo();
-
+    int count;
     bool queue_inst(instruction in_inst);
-
+    short SW_LW_dependency(short in_address);
     void adv_c();
 };
 

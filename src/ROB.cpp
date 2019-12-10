@@ -75,6 +75,19 @@ void ROB::reserve(short*result, int inst_no, std:: vector<ROB> rob  )
 	//}
 }
 
+void ROB:: advance_cycle(short*result, int inst_no, std:: vector<ROB> rob)
+{
+	for (int i=0; i<tracking.size(); i++) 
+	{
+		if (tracking[i].second==!nullptr)
+		{
+			rob[i].value= *(tracking[i].first);
+			//tracking.pop_back();
+			tracking.erase(tracking.begin() + i);
+			break;	
+		}
+	}
+}
 // to be added to tomasulo
 //std::deque<ROB> rob;
 //int rob_size;
@@ -121,18 +134,3 @@ void ROB::reserve(short*result, int inst_no, std:: vector<ROB> rob  )
 //		rob.erase(rob.begin(), rob.begin() +inst_no );
 //
 //}
-void SW_LW_dependency()
-{
-	for (int i = 0; i < rs.size(); i++)
-	{	
-		if (rs[i].type == lw)
-			for (int j = 0; j < rs.size(); j++)
-			{
-				if (rs[j].type == sw && rs[i].A == rs[j].A)
-				{
-					rs[j].Dest = rob[i].ROB_index;
-				}
-			}
-	}
-}
-
