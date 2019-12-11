@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include<vector>
 #include <deque>
+#include "reservations/station.h"
 //#include "Hash.hpp"
 using namespace std;
 /****************************************************************************************/
@@ -29,35 +30,22 @@ public:
 	// subtype jump : 0=Jmp,  1=JALR , 2= RET
 	// subtype branch: 0= Beq
 
-
-	enum inst_type { LW, SW, ADD, SUB, ADDI, JMP, JALR, RET, BEQ, MUL, NAND, Garbage };
-	struct instructionbase
-	{
-		inst_type type;
-		short subtype;
-		short rs1;
-		short rs2;
-		short rd;
-		short imm;
-	};
-	instructionbase ParsedInstructions;
-	std::vector<instructionbase>V_Instructions;
+	instruction ParsedInstructions;
+	std::vector<instruction>V_Instructions;
 	Parser();
 	Parser(string line);
-	std::vector<instructionbase> Get_Instructions();
+	std::vector<instruction> Get_Instructions();
 	string  get_inst();
 	int  get_rs1();
 	int get_rs2();
 	int  get_rd();
 	int get_imm();
-	void print();
 	ifstream infile;
 	~Parser();
 };
 
 Parser::Parser()
 {
-	inst = Garbage;
 	subtype = -1;
 	rs1 = -1;
 	rs2 = -1;
@@ -71,11 +59,10 @@ Parser::Parser(string line)//:Parser()
 
 	infile.open(line);
 }
-std::vector<Parser::instructionbase> Parser::Get_Instructions()
+std::vector<instruction> Parser::Get_Instructions()
 {
 	int pos, cursor, immediate_offset, location = 0, returnPosition;
 	string check;
-	cout << "Hello" << endl;
 	while (!infile.eof())
 	{
 		getline(infile, LineInstruction);
@@ -85,45 +72,42 @@ std::vector<Parser::instructionbase> Parser::Get_Instructions()
 		{
 			inst = LineInstruction.substr(0, 2);
 
-			if (inst == "lw") // assume LW x1,0(x2);
+			if (inst == "lw") // example lw x1,0(x2);
 			{
-				ParsedInstructions.type = LW;
+				ParsedInstructions.inst_t = l;
 				LineInstruction.erase(0, 4);// remove lw from the line with the x in the register name
 				pos = LineInstruction.find(",");
 				ParsedInstructions.rd = stoi(LineInstruction.substr(0, pos));
-				cout << "Rd: " << ParsedInstructions.rd;
 				LineInstruction.erase(0, pos);// remove x1
 				pos = LineInstruction.find("(");
 				ParsedInstructions.imm = stoi(LineInstruction.substr(1, pos));
-				cout << "\tImm: " << ParsedInstructions.imm;
 				LineInstruction.erase(0, pos + 2);
 				pos = LineInstruction.find(")");
 				ParsedInstructions.rs1 = stoi(LineInstruction.substr(0, pos));
-				cout << "\tRs1: " << ParsedInstructions.rs1 << endl;
+			
 
 			}
 			else
 				if (inst == "sw")
 				{
-					ParsedInstructions.type = SW;
+					ParsedInstructions.inst_t = s;
 					LineInstruction.erase(0, 4);// remove lw from the line with the x in the register name
 					pos = LineInstruction.find(",");
 					ParsedInstructions.rs2 = stoi(LineInstruction.substr(0, pos));
-					cout << "Rs2: " << ParsedInstructions.rs2;
 					LineInstruction.erase(0, pos);// remove x1
 					pos = LineInstruction.find("(");
 					ParsedInstructions.imm = stoi(LineInstruction.substr(1, pos));
-					cout << "\tImm: " << ParsedInstructions.imm;
 					LineInstruction.erase(0, pos + 2);
 					pos = LineInstruction.find(")");
 					ParsedInstructions.rs1 = stoi(LineInstruction.substr(0, pos));
-					cout << "\tRs1: " << ParsedInstructions.rs1 << endl;
 				}
 				else
 					if (inst == "su")
 					{
+
 						inst.erase(0, 5);
-						ParsedInstructions.type = SUB;// remove sub and the x in the name of the register
+						ParsedInstructions.inst_t = a;
+						ParsedInstructions.sub_type = 2;
 						pos = LineInstruction.find(",");
 						ParsedInstructions.rs1 = stoi(LineInstruction.substr(0, pos));
 						LineInstruction.erase(0, pos + 2);
@@ -141,23 +125,17 @@ std::vector<Parser::instructionbase> Parser::Get_Instructions()
 				inst = LineInstruction.substr(0, 3);
 				if (inst == "beq")
 				{
-					ParsedInstructions.type = BEQ;
+					ParsedInstructions.inst_t = b;
 					LineInstruction.erase(0, 5);
 					pos = LineInstruction.find(',');
-					rs1 = stoi(LineInstruction.substr(0, pos));
-					ParsedInstructions.rs1 = rs1;
+					ParsedInstructions.rs1 = stoi(LineInstruction.substr(0, pos));
 					LineInstruction.erase(0, pos + 2);// +2 to remove the extra space
-					cout << "Rs1: " << rs1;
 
 					pos = LineInstruction.find(',');
-					rs2 = stoi(LineInstruction.substr(0, pos));
-					ParsedInstructions.rs2 = rs2;
+					ParsedInstructions.rs2 = stoi(LineInstruction.substr(0, pos));
 					LineInstruction.erase(0, pos + 1);// +2 to remove the extra space
-					cout << "\tRs2: " << rs2;
 
 					label = LineInstruction;
-					//cout << label << endl;
-					cursor = 4;
 					returnPosition = infile.tellg();
 					infile.clear();
 					infile.seekg(ios_base::beg);
@@ -165,13 +143,10 @@ std::vector<Parser::instructionbase> Parser::Get_Instructions()
 					{
 						getline(infile, check);
 						immediate_offset++;
-						//cout << check.substr(0, label.size() - 1) << "location: " << location << " imm1" << immediate_offset << endl;
 						string temp = check.substr(0, label.size());
 						if (temp == label)
 						{
-							imm = immediate_offset - location;
-							ParsedInstructions.imm = imm;
-							cout << "\tIMMpls: " << imm << endl;
+							ParsedInstructions.imm = immediate_offset - location;
 							infile.seekg(ios_base::beg);
 							infile.seekg(returnPosition);
 							break;
@@ -186,71 +161,71 @@ std::vector<Parser::instructionbase> Parser::Get_Instructions()
 					inst = LineInstruction.substr(0, 3);
 					if (inst == "jal") // JALR
 					{
-						ParsedInstructions.type = JALR;
+						ParsedInstructions.inst_t = j;
+						ParsedInstructions.sub_type = 1;
 						LineInstruction.erase(0, 6);
 						rs1 = stoi(LineInstruction);
 						ParsedInstructions.rs1 = rs1;
-						cout << "rs1: " << rs1 << endl;
 
 					}
 					else
 						if (inst == "ret")
-							ParsedInstructions.type = RET;
-
+						{
+							ParsedInstructions.inst_t = j;
+							ParsedInstructions.sub_type = 2;
+						}
 						else // j imm
 						{
-							ParsedInstructions.type = JMP;
+							ParsedInstructions.inst_t = j;
+							ParsedInstructions.sub_type = 0;
 							LineInstruction.erase(0, 2);
 							label = LineInstruction;
-							imm = stoi(LineInstruction);
-							ParsedInstructions.imm = imm;
-							cout << "IMM: " << imm << endl;
+							ParsedInstructions.imm = stoi(LineInstruction);
 						}
 
 				}
-				else //R-instruction
+				else //Arithmatic
 					if (LineInstruction[0] == 'a')
 					{
 						inst = LineInstruction.substr(0, 4);
+
 						if (inst == "addi")
 						{
+							ParsedInstructions.inst_t = a;
+							ParsedInstructions.sub_type = 1;
 							LineInstruction.erase(0, 6);
 							pos = LineInstruction.find(',');
 							rs1 = stoi(LineInstruction.substr(0, pos));
 							ParsedInstructions.rs1 = rs1;
 							LineInstruction.erase(0, pos + 2);// +2 to remove the extra space
-							cout << "Rs1: " << rs1;
 
 							pos = LineInstruction.find(',');
 							rs2 = stoi(LineInstruction.substr(0, pos));
 							ParsedInstructions.rs2 = rs2;
 							LineInstruction.erase(0, pos + 1);// +2 to remove the extra space
-							cout << "\tRs2: " << rs2;
 
 							imm = stoi(LineInstruction);
 							ParsedInstructions.imm = imm;
-							cout << "\tIMM: " << imm << endl;
 						}
 
 						else  // ADD
 						{
+							ParsedInstructions.inst_t = a;
+							ParsedInstructions.sub_type = 0;
 							LineInstruction.erase(0, 5);
 							pos = LineInstruction.find(',');
 							rs1 = stoi(LineInstruction.substr(0, pos));
 							ParsedInstructions.rs1 = rs1;
 							LineInstruction.erase(0, pos + 2);// +2 to remove the extra space
-							cout << "Rs1: " << rs1;
 
 							pos = LineInstruction.find(',');
 							rs2 = stoi(LineInstruction.substr(0, pos));
 							ParsedInstructions.rs2 = rs2;
 							LineInstruction.erase(0, pos + 2);// +2 to remove the extra space
-							cout << "\tRs2: " << rs2;
 
 
 							rd = stoi(LineInstruction);
 							ParsedInstructions.rd = rd;
-							cout << "\trd: " << rd << endl;
 						}
 					}
 					else
@@ -260,22 +235,19 @@ std::vector<Parser::instructionbase> Parser::Get_Instructions()
 							if (inst == "mul")
 							{
 								LineInstruction.erase(0, 5);
-								ParsedInstructions.type = MUL;
+								ParsedInstructions.inst_t = m;
 								pos = LineInstruction.find(',');
 								rs1 = stoi(LineInstruction.substr(0, pos));
 								ParsedInstructions.rs1 = rs1;
 								LineInstruction.erase(0, pos + 2);// +2 to remove the extra space
-								cout << "Rs1: " << rs1 << endl;
 
 								pos = LineInstruction.find(',');
 								rs2 = stoi(LineInstruction.substr(0, pos));
 								ParsedInstructions.rs2 = rs2;
 								LineInstruction.erase(0, pos + 2);// +2 to remove the extra space
-								cout << "Rs2: " << rs2 << endl;
 
 								rd = stoi(LineInstruction);
 								ParsedInstructions.rd = rd;
-								cout << "rd: " << rd << endl;
 
 							}
 						}
@@ -283,10 +255,11 @@ std::vector<Parser::instructionbase> Parser::Get_Instructions()
 							if (LineInstruction[0] == 'n')
 							{
 								inst = LineInstruction.substr(0, 4);
+								
 								if (inst == "nand")
 								{
 									LineInstruction.erase(0, 6);
-									ParsedInstructions.type = NAND;
+									ParsedInstructions.inst_t = n;
 
 									pos = LineInstruction.find(',');
 									ParsedInstructions.rs1 = stoi(LineInstruction.substr(0, pos));
