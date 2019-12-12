@@ -9,4 +9,4 @@ This project is a simulation for the Tomasulo algorithm with speculation. It inc
 
 This working simulation includes all the Ridiculously Simple Computer (RiSC-16) instructions.
 
-The simulator simulates the program’s execution on a dual-issue processor. The parser is implemented as required in the bonus section. Also, the variable hardware orginization is implemented entailing the variable numbers of issues ROB size, number of resevations stations, and the number of cycles for each station.
+The simulator simulates the program’s execution on a dual-issue processor. The parser is implemented as required in the bonus section. Also, the variable hardware orginization is implemented entailing a variable number of issues, ROB size, number of resevations stations, and the number of cycles for each station.
