@@ -1,9 +1,9 @@
 # Computer-architecture-project-2
 
-*Abdelsalam ElTamawy - solomspd@aucegypt.edu - 900170376 
-*Ahmed Ibrahim - ahmeddibrahim@aucegypt.edu - 900121237
-*Andrew Fahmy - andrewk.kamal@aucegypt.edu - 900170228
-*Rinal Mohamed - rinalmohamed@aucegypt.edu - 900171803
+- Abdelsalam ElTamawy - solomspd@aucegypt.edu - 900170376 
+- Ahmed Ibrahim - ahmeddibrahim@aucegypt.edu - 900121237
+- Andrew Fahmy - andrewk.kamal@aucegypt.edu - 900170228
+- Rinal Mohamed - rinalmohamed@aucegypt.edu - 900171803
 
 This project is a simulation for the Tomasulo algorithm with speculation. It includes the ROB, Parser, Reservation Station, Memory, and the Tomasulo class. We implemented this code using c++.
 
