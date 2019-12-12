@@ -12,9 +12,12 @@ class mult : public station {
 private:
 
 public:
-    mult();
+    mult(int c);
+
     ~mult();
+
     bool add_inst(instruction in_inst);
+
     short get_result() override;
 };
 

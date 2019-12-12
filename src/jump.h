@@ -8,17 +8,21 @@
 
 #include "station.h"
 
-enum type {jmp, jalr, ret};
 
 class jump : public station {
 private:
     short address;
     short *pc;
+    j_type op;
 public:
     jump();
-    jump(short *pc);
+
+    jump(int c, short *pc);
+
     ~jump();
+
     bool add_inst(instruction in_inst) override;
+
     short get_result() override;
 };
 

@@ -7,14 +7,22 @@
 
 #include "station.h"
 
-class lw : public station{
+class lw : public station {
 private:
     short address;
+    short *mem;
 public:
     lw();
+
+    lw(int c, short in_mem[]);
+
     ~lw();
+
     bool add_inst(instruction in_inst) override;
+
     short get_result() override;
+
+    short get_addr() override;
 };
 
 

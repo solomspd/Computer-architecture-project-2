@@ -13,12 +13,20 @@ private:
     short address;
     short *pc;
     bool predict_taken, taken;
+    int predict;
+    int predict_tot;
 public:
     branch();
-    branch(short *pc);
+
+    branch(int c, short *pc);
+
     ~branch();
+
     bool add_inst(instruction in_inst) override;
+
     short get_result() override;
+
+    float get_pred(int &pred, int &pred_t) override;
 };
 
 

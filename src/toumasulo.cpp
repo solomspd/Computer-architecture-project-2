@@ -2,239 +2,248 @@
 // Created by solomspd on 03/12/2019.
 //
 
+#include <iostream>
 #include "toumasulo.h"
 
-/*
-TODO THINGS WE NEED TO CONSIDER:
- * How to handle multiple stations trying to write in the same cycle. Convention is writing the oldest first.
- * How should we write to the rob? should we give the reservation station a pointer to the int variable it will eventually change? will we update it with a method from the station?
- * How will we update from the rob the dependent stations?
-*/
-toumasulo::toumasulo()
-{
-    cycle_n = 0;
-    pc = 0;
-    std::fill(std::begin(reg_dep), std::end(reg_dep), new short{0});
-    std::fill(std::begin(reg), std::end(reg), new short{0});
+toumasulo::toumasulo(std::string mem_file, int in_issue_n, int in_max_rob, int in_l_s, int in_s_s, int in_j_s, int in_b_s, int in_a_s, int in_n_s, int in_m_s, int in_l_c, int in_s_c, int in_j_c, int in_b_c, int in_a_c, int in_n_c,  int in_m_c) {
 
-    std::accumulate(unit_counts, unit_counts + 7, tot);
+    rob_buffer.set_up(in_issue_n, in_max_rob, in_l_c, in_s_c, in_j_c, in_b_c, in_a_c, in_n_c, in_m_c);
+    issue_n = in_issue_n;
+
+    std::ifstream file(mem_file.c_str());
+    lws = in_l_s;
+    sws = in_s_s;
+    js = in_j_s;
+    bs = in_b_s;
+    as = in_a_s;
+    ns = in_n_s;
+    mults = in_m_s;
+    lwc = in_l_c;
+    swc = in_s_c;
+    jc = in_j_c;
+    bc = in_b_c;
+    ac = in_a_c;
+    nc = in_n_c;
+    mc = in_m_c;
+    int i = 0;
+    if (!file.is_open()) {
+        std::cout << "CANNOT OPEN FILE";
+    }
+    while (!file.eof()) {
+        file >> mem[i++];
+    }
+    file.close();
+
+    cycle_n = 0;
+    pc = new short (0);
+    for (int i = 0; i < reg_count; i++) {
+        reg_dep[i].first = false;
+        reg_dep[i].second = new short*;
+        *reg_dep[i].second = new short {0};
+    }
+    std::fill(std::begin(reg), std::end(reg), new short*{new short{0}});
+
+    tot = lws + sws + js + bs + as+ ns + mults;
     stations = new station *[tot];
     int count = 0;
 
     // TODO pragmatically assign types so that it pragmatically creates stations
-    load = stations[count];
-    for (int i = 0; i < lws; i++)
-    {
-        stations[count++] = new lw;
+    int temp = count;
+    for (int i = 0; i < lws; i++) {
+        stations[count++] = new lw(lwc, mem);
     }
+    l_st = temp;
+    load = stations[temp];
 
-    store = stations[count];
-    for (int i = 0; i < sws; i++)
-    {
-        stations[count++] = new sw;
+    temp = count;
+    for (int i = 0; i < sws; i++) {
+        stations[count++] = new sw(swc, l_st, lws, stations);
     }
+    s_st = temp;
+    store = stations[temp];
 
-    jmp = stations[count];
-    for (int i = 0; i < js; i++)
-    {
-        stations[count++] = new jump(pc);
+    temp = count;
+    for (int i = 0; i < js; i++) {
+        stations[count++] = new jump(jc, pc);
     }
+    j_st = temp;
+    jmp = stations[temp];
 
-    beq = stations[count];
-    for (int i = 0; i < bs; i++)
-    {
-        stations[count++] = new branch(pc);
+    temp = count;
+    for (int i = 0; i < bs; i++) {
+        stations[count++] = new branch(bc, pc);
     }
+    b_st = temp;
+    beq = stations[temp];
 
-    ari = stations[count];
-    for (int i = 0; i < as; i++)
-    {
-        stations[count++] = new arith;
+    temp = count;
+    for (int i = 0; i < as; i++) {
+        stations[count++] = new arith(ac);
     }
+    a_st = temp;
+    ari = stations[temp];
 
-    nd = stations[count];
-    for (int i = 0; i < ns; i++)
-    {
-        stations[count++] = new nand;
+    temp = count;
+    for (int i = 0; i < ns; i++) {
+        stations[count++] = new nand(nc);
     }
+    n_st = temp;
+    nd = stations[temp];
 
-    mul = stations[count];
-    for (int i = 0; i < mults; i++)
-    {
-        stations[count++] = new mult;
+    temp = count;
+    for (int i = 0; i < mults; i++) {
+        stations[count++] = new mult(mc);
     }
+    m_st = temp;
+    mul = stations[temp];
 }
 
-toumasulo::~toumasulo()
-{
+toumasulo::~toumasulo() {
+
 }
 
-bool toumasulo::queue_inst(instruction in_inst)
-{
-    count=0;
-    //    if (!rob.is_available()) {  // TODO add ROB checking implementation
-    //        return true;
-    //    }
-    short rs1 = *in_inst.rs1;
-    short rs2 = *in_inst.rs2;
 
-    bool dep1 = reg_dep[rs1].first;
-    bool dep2 = reg_dep[rs2].first;
-
-    if (!reg_dep[rs1].first)
-    {
-        in_inst.rs1 = reg[rs1];
-    }
-    else
-    {
-        in_inst.rs1 = reg_dep[rs1].second;
+bool toumasulo::queue_inst(instruction in_inst) {
+    if (!rob_buffer.is_available()) {
+        return true;
     }
 
-    if (!reg_dep[rs2].first)
-    {
-        in_inst.rs2 = reg[rs2];
-    }
-    else
-    {
-        in_inst.rs2 = reg_dep[rs2].second;
+
+
+    if (in_inst.inst_t == j && in_inst.sub_type != jmpe) {
+        in_inst.rs2 = 1;
     }
 
-    station *reserved = nullptr;
-    switch (in_inst.inst_t)
-    {
-    case l:
-        for (int i = 0; i < lws; i++)
-        {
-            if (load[i].add_inst(in_inst))
-            {
-                reserved = load + i;
-                // dep2 = false;
-                break;
-            }
-        }
-        break;
+    bool dep1 = true;
+    bool dep2 = true;
 
-    case s:
-        for (int i = 0; i < sws; i++)
-        {
-            if (store[i].add_inst(in_inst))
-            {
-                reserved = store + i;
-                break;
-            }
-        }
-        break;
+    short *&src1 = !reg_dep[in_inst.rs1].first ? *reg[in_inst.rs1] : *reg_dep[in_inst.rs1].second;
+    short *&src2 = !reg_dep[in_inst.rs2].first ? *reg[in_inst.rs2] : *reg_dep[in_inst.rs2].second;
+    
 
-    case j:
-        for (int i = 0; i < js; i++)
-        {
-            if (jmp[i].add_inst(in_inst))
-            {
-                reserved = jmp + i;
-                dep1 = false;
-                dep2 = false;
-                break;
-            }
-        }
-        break;
-
-    case b:
-        for (int i = 0; i < bs; i++)
-        {
-            if (beq[i].add_inst(in_inst))
-            {
-                reserved = beq + i;
-                break;
-            }
-        }
-        break;
-
-    case a:
-        for (int i = 0; i < as; i++)
-        {
-            if (ari[i].add_inst(in_inst))
-            {
-                reserved = ari + i;
-                if (in_inst.sub_type /*== ADDI*/)
-                {
-                    dep2 = false;
+    station *reserved;
+    reserved = nullptr;
+    switch (in_inst.inst_t) {
+        case l:
+            for (int i = l_st; i < lws + l_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    break;
                 }
-                break;
             }
-        }
-        break;
+            break;
 
-    case n:
-        for (int i = 0; i < ns; i++)
-        {
-            if (nd[i].add_inst(in_inst))
-            {
-                reserved = nd + i;
-                break;
+        case s:
+            for (int i = s_st; i < sws + s_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    break;
+                }
             }
-        }
-        break;
+            break;
 
-    case m:
-        for (int i = 0; i < mults; i++)
-        {
-            if (mul[i].add_inst(in_inst))
-            {
-                reserved = mul + i;
-                break;
+        case j:
+            for (int i = j_st; i < js + j_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    switch (in_inst.sub_type) {
+                        case jmpe: dep1 = false; dep2 = false; break;
+                        case ret: dep2 = false;
+                    }
+                    break;
+                }
             }
-        }
-        break;
+            break;
+
+        case b:
+            for (int i = b_st; i < bs + b_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    break;
+                }
+            }
+            break;
+
+        case a:
+            for (int i = a_st; i < as + a_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    if (in_inst.sub_type == addi) {
+                        dep2 = false;
+                    }
+                    break;
+                }
+            }
+            break;
+
+        case n:
+            for (int i = n_st; i < ns + n_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    break;
+                }
+            }
+            break;
+
+        case m:
+            for (int i = m_st; i < mults + m_st; i++) {
+                if (stations[i]->add_inst(in_inst)) {
+                    reserved = stations[i];
+                    break;
+                }
+            }
+            break;
     }
 
-    instance.setDest(in_inst.rd);
-    rob.push_back(instance);
-    rob.reserve(reserved.get_res_ptr(),count,rob);
-    // ROB.reserve(reserved);
-    if (reserved != nullptr)
-    {
-        reserved->set_dep(dep1, dep2);
+
+    if (reserved != nullptr) {
+        rob_buffer.reserve(reserved->get_dest(), in_inst.inst_t, reserved->res_ptr(), reg_dep);
+        if (in_inst.inst_t == s) {reserved->set_entry(rob_buffer.top());}
+        reserved->set_dep(dep1, dep2, src1, src2);
+        reserved->start_up();
     }
-    count++;
-    return reserved == nullptr;
+
+    return reserved != nullptr;
 }
 
-void toumasulo::adv_c()
-{
+bool toumasulo::adv_c() {
     cycle_n++;
-    pc++;
-    // the first in the pair is a pointer to the number of ld station
-    std::vector<std::pair<short *, int>> tracking;
-    for (int i = 0; i < lws; i++)
-    {
-        for (int j = 0; j < sws; j++)
-        {
-            if (!load[i].get_dep1() && load[i].address == store[i].address)
-            {
-                load[i].set_dep2(false);
-            }
-            else
-            {
-                pair<short *, int> temp;
-                temp.first = load[i].Vj;
-                temp.second = load[i].imm;
-                tracking.push_back(temp);
-            }
-        }
-    }
-    for (int i = 0; i < tracking.size(); i++)
-    {
-        if (load[i].first != nullptr)
-        {
-            load[i].set_dep2(false);
-            int effective_address = load[i].second + load[i].rs;
-            tracking.pop_back(load[i]);
+
+    if (*pc < prog.size()) {
+        bool taken = true;
+        for (int i = 0; i < issue_n && taken; i++) {
+            taken = queue_inst(prog[*pc]);
+            if (taken) { (*pc)++; }
+            taken &= !(prog[*pc].inst_t == b || prog[*pc].inst_t == j);
         }
     }
 
-    for (int i = 0; i < tot; i++)
-    {
+    for (int i = 0; i < tot; i++) {
         stations[i]->adv_c();
     }
-    rob[count].advance_cycle(reserved.get_res_ptr(),count,rob);
+
+    rob_buffer.adv_c(reg, reg_dep, mem);
+
+    **reg[0] = 0;
+
+    return *pc >= prog.size() && rob_buffer.is_empty();
+}
+
+void toumasulo::get_inst(std::vector<instruction> in_prog) {
+    prog = in_prog;
+}
+
+void toumasulo::get_results(int &tot_c, float &ipc, float &predict) {
+    tot_c = cycle_n;
+    ipc = float(prog.size()) / float(cycle_n);
+    int pred = 0;
+    int pred_t = 0;
+    for (int i = b_st; i < bs; i++) {
+        stations[i]->get_pred(pred, pred_t);
+    }
+    if (pred_t > 0) {
+        predict = pred / pred_t;
+    } else {
+        predict = -1;
+    };
 }

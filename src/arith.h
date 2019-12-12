@@ -7,15 +7,17 @@
 
 #include "station.h"
 
-enum operation {add, sub};
 
 class arith : public station {
 private:
-    operation op;
+    a_type op;
 public:
-    arith();
+    arith(int c);
+
     ~arith();
+
     bool add_inst(instruction in_inst) override;
+
     short get_result() override;
 };
 

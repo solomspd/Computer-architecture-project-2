@@ -8,13 +8,16 @@
 
 #include "station.h"
 
-class nand : public station{
+class nand : public station {
 private:
 
 public:
-    nand();
+    nand(int c);
+
     ~nand();
+
     bool add_inst(instruction in_inst) override;
+
     short get_result() override;
 };
 
